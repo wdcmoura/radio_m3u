@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rádio M3U</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <style>
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      padding: 2rem;
+      background: #1e1e1e;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000;
+    }
+
+    h1 {
+      color: #1DB954;
+      margin-bottom: 1rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #1DB954;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #17a64a;
+    }
+
+    #status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+
+    #buffering {
+      font-size: 1.2rem;
+      color: yellow;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎧 Rádio M3U</h1>
+    <select id="stationSelect">
+      <option value="https://player.ipstm.net/proxy/32224">Metalcore</option>
+      <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
+      <option value="https://centova.euroti.com.br:20015/stream">Rádio Exmera</option>
+    </select>
+    
+    <button id="playPauseBtn">⏸️ Pausar</button>
+    <p id="status">🔊 Tocando: Metalcore</p>
+    <p id="buffering"></p>
+
+    <audio id="audioPlayer" preload="auto"></audio>
+  </div>
+
+  <script>
+    const select = document.getElementById('stationSelect');
+    const player = document.getElementById('audioPlayer');
+    const status = document.getElementById('status');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const buffering = document.getElementById('buffering');
+    let reconnectTimeout;
+    let bufferTimeout;
+    const BUFFER_TIME = 10000; // 10 segundos de buffer
+
+    function updateMetadata() {
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: select.options[select.selectedIndex].text,
+          artist: 'Rádio Web',
+          album: 'M3U Player',
+          artwork: [
+            { src: 'icon.png', sizes: '512x512', type: 'image/png' }
+          ]
+        });
+      }
+    }
+
+    function playStation(url, name = "") {
+      clearTimeout(reconnectTimeout);
+      clearTimeout(bufferTimeout); // Limpa o timeout de buffer caso o áudio comece rapidamente
+      player.src = url;
+      player.load();
+
+      // Monitorando o tempo de buffer
+      bufferTimeout = setTimeout(() => {
+        buffering.textContent = "⏳ Carregando buffer...";
+      }, BUFFER_TIME); // Exibe mensagem após 10 segundos
+
+      player.play().then(() => {
+        playPauseBtn.textContent = "⏸️ Pausar";
+        updateMetadata();
+      }).catch(err => {
+        console.error("Erro ao tocar:", err);
+        status.textContent = "⚠️ Erro ao tocar. Tentando novamente...";
+        scheduleReconnect();
+      });
+    }
+
+    function scheduleReconnect() {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = setTimeout(() => {
+        status.textContent = "🔁 Reconectando...";
+        player.load();
+        player.play().catch(() => {
+          scheduleReconnect();
+        });
+      }, 5000);
+    }
+
+    function changeStation(direction) {
+      const total = select.options.length;
+      let currentIndex = select.selectedIndex;
+      let newIndex = currentIndex + direction;
+
+      if (newIndex < 0) newIndex = total - 1;
+      if (newIndex >= total) newIndex = 0;
+
+      select.selectedIndex = newIndex;
+      const name = select.options[newIndex].text;
+      playStation(select.value, name);
+    }
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        changeStation(-1);
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        changeStation(1);
+      });
+    }
+
+    select.addEventListener('change', () => {
+      const name = select.options[select.selectedIndex].text;
+      playStation(select.value, name);
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      if (player.paused) {
+        player.play();
+        playPauseBtn.textContent = "⏸️ Pausar";
+      } else {
+        player.pause();
+        playPauseBtn.textContent = "▶️ Tocar";
+        status.textContent = "⏸️ Pausado";
+      }
+    });
+
+    player.addEventListener('playing', () => {
+      status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
+      clearTimeout(bufferTimeout); // Cancela o "buffering" caso o áudio comece a tocar
+      buffering.textContent = ""; // Limpa a mensagem de "buffering"
+    });
+
+    player.addEventListener('waiting', () => {
+      buffering.textContent = "⏳ Carregando buffer...";
+    });
+
+    player.addEventListener('canplay', () => {
+      buffering.textContent = ""; // Limpa a mensagem quando estiver pronto
+    });
+
+    ['error', 'stalled', 'ended'].forEach(event => {
+      player.addEventListener(event, () => {
+        status.textContent = "⚠️ Erro de reprodução. Tentando reconectar...";
+        scheduleReconnect();
+      });
+    });
+
+    // Primeira estação ao carregar
+    const firstName = select.options[select.selectedIndex].text;
+    playStation(select.value, firstName);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js');
+    }
+  </script>
+</body>
+</html>
