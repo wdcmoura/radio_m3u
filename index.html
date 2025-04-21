@@ -8,10 +8,33 @@
   <link rel="apple-touch-icon" href="image/icon.png" />
   <link rel="icon" href="image/favicon.ico" type="image/x-icon">
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  
   <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --container-bg: #f0f0f0;
+      --button-bg: #1DB954;
+      --button-hover: #17a64a;
+      --status-color: #333;
+      --buffering-color: #ff8c00;
+    }
+  
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #121212;
+        --text-color: #ffffff;
+        --container-bg: #1e1e1e;
+        --button-bg: #1DB954;
+        --button-hover: #17a64a;
+        --status-color: #ccc;
+        --buffering-color: yellow;
+      }
+    }
+  
     body {
-      background: #121212;
-      color: #fff;
+      background: var(--bg-color);
+      color: var(--text-color);
       font-family: Arial, sans-serif;
       margin: 0;
       display: flex;
@@ -19,22 +42,22 @@
       align-items: center;
       height: 100vh;
     }
-
+  
     .container {
       text-align: center;
       max-width: 400px;
       width: 90%;
       padding: 2rem;
-      background: #1e1e1e;
+      background: var(--container-bg);
       border-radius: 10px;
-      box-shadow: 0 0 10px #000;
+      box-shadow: 0 0 10px #00000050;
     }
-
+  
     h1 {
-      color: #1DB954;
+      color: var(--button-bg);
       margin-bottom: 1rem;
     }
-
+  
     select {
       width: 100%;
       padding: 0.6rem;
@@ -43,9 +66,9 @@
       border-radius: 5px;
       font-size: 1rem;
     }
-
+  
     button {
-      background-color: #1DB954;
+      background-color: var(--button-bg);
       color: white;
       border: none;
       padding: 0.6rem 1.2rem;
@@ -53,21 +76,23 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
+  
     button:hover {
-      background-color: #17a64a;
+      background-color: var(--button-hover);
     }
-
+  
     #status {
       margin-top: 1rem;
       font-size: 0.9rem;
+      color: var(--status-color);
     }
-
+  
     #buffering {
       font-size: 1.2rem;
-      color: yellow;
+      color: var(--buffering-color);
     }
   </style>
+  
 </head>
 <body>
   <div class="container">
