@@ -99,7 +99,7 @@
     const buffering = document.getElementById('buffering');
     let reconnectTimeout;
     let bufferTimeout;
-    const BUFFER_TIME = 5000;
+    const BUFFER_TIME = 10000;
     let isManuallyPaused = false;
 
     function updateMetadata() {
@@ -116,25 +116,22 @@
       clearTimeout(reconnectTimeout);
       clearTimeout(bufferTimeout);
       player.src = url;
-      player.load(); // Inicia o carregamento da rádio
-
-      buffering.textContent = "⏳ Carregando buffer...";
-      playPauseBtn.textContent = "⏳ Bufferizando...";
-      status.textContent = `⌛ Aguardando buffer para: ${name}`;
+      player.load();
 
       bufferTimeout = setTimeout(() => {
-        player.play().then(() => {
-          playPauseBtn.textContent = "⏸️ Pausar";
-          status.textContent = `🔊 Tocando: ${name}`;
-          isManuallyPaused = false;
-          updateMetadata();
-          buffering.textContent = "";
-        }).catch(err => {
-          console.error("Erro ao tocar:", err);
-          status.textContent = "⚠️ Erro ao tocar. Tentando novamente...";
-          scheduleReconnect();
-        });
+        buffering.textContent = "⏳ Carregando buffer...";
       }, BUFFER_TIME);
+
+      player.play().then(() => {
+        playPauseBtn.textContent = "⏸️ Pausar";
+        status.textContent = `🔊 Tocando: ${name}`;
+        isManuallyPaused = false;
+        updateMetadata();
+      }).catch(err => {
+        console.error("Erro ao tocar:", err);
+        status.textContent = "⚠️ Erro ao tocar. Tentando novamente...";
+        scheduleReconnect();
+      });
     }
 
     function scheduleReconnect() {
