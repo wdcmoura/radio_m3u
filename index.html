@@ -229,6 +229,16 @@
       });
     });
 
+    player.addEventListener('canplaythrough', () => {
+    buffering.textContent = "";
+    player.play().then(() => {
+      playPauseBtn.textContent = "⏸️ Pausar";
+      status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
+      isManuallyPaused = false;
+      });
+    });
+
+
     // Iniciar primeira estação
     const firstName = select.options[select.selectedIndex].text;
     playStation(select.value, firstName);
