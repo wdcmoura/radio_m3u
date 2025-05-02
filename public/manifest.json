@@ -1,0 +1,16 @@
+{
+  "name": "Rádio M3U",
+  "short_name": "Rádio M3U",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#1DB954",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "image/icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
