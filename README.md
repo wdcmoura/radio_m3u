@@ -18,7 +18,6 @@ Uma aplicação web leve e responsiva para ouvir **rádios online via links M3U/
 - ⏯ Botão de **Play/Pause**
 - 📱 Suporte a **Media Session API** (controlos nativos em dispositivos móveis)
 - 📶 Indicador de **status da transmissão** e **buffer**
-- 🌓 Interface escura e responsiva
 - 🖥️ Pode ser instalada como **App de desktop ou mobile (PWA)**
 - 📋 Lista personalizável de rádios
 
