@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -7,7 +8,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="image/icon.png" />
   <link rel="icon" href="image/favicon.ico" type="image/x-icon">
-  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   
   <style>
     :root {
@@ -87,13 +88,13 @@
   <div class="container">
     <h1>🎧 Rádio M3U</h1>
     <select id="stationSelect">
-      <option value="https://rrdns-dumont.webnow.com.br/dumont.aac">Dumont FM - 104.3</option>
       <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
       <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP.aac">Alpha FM</option>
       <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac">Rádio 89 FM Rock</option>
       <option value="https://player.ipstm.net/proxy/32224">Metal Zone Radio</option>
       <option value="https://skywatcherawakenedradio.radiolebowski.com/play">Trap Radio</option>
       <option value="https://streams.radiobob.de/metalcore/mp3-128">RADIO BOB - Metal</option>
+      <option value="https://rrdns-dumont.webnow.com.br/dumont.aac">Dumont FM - 104.3</option>
       <!-- <option value="http://serv.coreradio.online:8000/coreradio">Core Radio</option> -->
     </select>
 
@@ -140,7 +141,7 @@
 
       player.play().then(() => {
         playPauseBtn.textContent = "⏸️ Pausar";
-        status.textContent = 🔊 Tocando: ${name};
+        status.textContent = `🔊 Tocando: ${name}`;
         isManuallyPaused = false;
         updateMetadata();
       }).catch(err => {
@@ -197,7 +198,7 @@
         isManuallyPaused = false;
         player.play();
         playPauseBtn.textContent = "⏸️ Pausar";
-        status.textContent = 🔊 Tocando: ${select.options[select.selectedIndex].text};
+        status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
       } else {
         isManuallyPaused = true;
         player.pause();
@@ -207,7 +208,7 @@
     });
 
     player.addEventListener('playing', () => {
-      status.textContent = 🔊 Tocando: ${select.options[select.selectedIndex].text};
+      status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
       clearTimeout(bufferTimeout);
       buffering.textContent = "";
     });
