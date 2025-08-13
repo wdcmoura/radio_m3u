@@ -32,6 +32,7 @@ Uma aplicação web leve e responsiva para ouvir **rádios online via links M3U/
 - Trap Radio  
 - Rádio BOB - Metal  
 - Dumont FM - 104.3  
+- BBC World Service
 
 Você pode editar o código para adicionar, remover ou modificar os streams da `<select>` com facilidade.
 
