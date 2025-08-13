@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="image/icon.png" />
   <link rel="icon" href="image/favicon.ico" type="image/x-icon">
   <meta name="mobile-web-app-capable" content="yes" />
-
+  
   <style>
     :root {
       --bg-color: #121212;
@@ -19,6 +19,7 @@
       --status-color: #ccc;
       --buffering-color: yellow;
     }
+  
     body {
       background: var(--bg-color);
       color: var(--text-color);
@@ -29,6 +30,7 @@
       align-items: center;
       height: 100vh;
     }
+  
     .container {
       text-align: center;
       max-width: 400px;
@@ -38,10 +40,12 @@
       border-radius: 10px;
       box-shadow: 0 0 10px #00000050;
     }
+  
     h1 {
       color: var(--button-bg);
       margin-bottom: 1rem;
     }
+  
     select {
       width: 100%;
       padding: 0.6rem;
@@ -50,6 +54,7 @@
       border-radius: 5px;
       font-size: 1rem;
     }
+  
     button {
       background-color: var(--button-bg);
       color: white;
@@ -59,43 +64,39 @@
       border-radius: 5px;
       cursor: pointer;
     }
+  
     button:hover {
       background-color: var(--button-hover);
     }
+  
     #status {
       margin-top: 1rem;
       font-size: 0.9rem;
       color: var(--status-color);
     }
+  
     #buffering {
       font-size: 1.2rem;
       color: var(--buffering-color);
     }
-  </style>
-
-  <!-- Hls.js para tocar streams m3u8 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.14/hls.min.js"></script>
+  </style>  
+  
+  
 </head>
 <body>
   <div class="container">
     <h1>🎧 Rádio M3U</h1>
     <select id="stationSelect">
-<<<<<<< HEAD
       <option value="https://rrdns-dumont.webnow.com.br/dumont.aac">Dumont FM - 104.3</option>
-=======
->>>>>>> parent of 828b2af (Atualizações)
+      <option value="https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/pc_hd_abr_v2/cfs/bbc_world_service.m3u8">BBC World Service</option>
       <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
       <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP.aac">Alpha FM</option>
       <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac">Rádio 89 FM Rock</option>
       <option value="https://player.ipstm.net/proxy/32224">Metal Zone Radio</option>
       <option value="https://skywatcherawakenedradio.radiolebowski.com/play">Trap Radio</option>
       <option value="https://streams.radiobob.de/metalcore/mp3-128">RADIO BOB - Metal</option>
-<<<<<<< HEAD
-      <option value="https://a.files.bbci.co.uk/ms6/live/3441A116-B12E-4D2F-ACA8-C1984642FA4B/audio/simulcast/hls/nonuk/pc_hd_abr_v2/cfs/bbc_world_service.m3u8">BBC World Service</option>
-=======
       <option value="https://rrdns-dumont.webnow.com.br/dumont.aac">Dumont FM - 104.3</option>
       <!-- <option value="http://serv.coreradio.online:8000/coreradio">Core Radio</option> -->
->>>>>>> parent of 828b2af (Atualizações)
     </select>
 
     <button id="playPauseBtn">⏸️ Pausar</button>
@@ -115,7 +116,6 @@
     let bufferTimeout;
     const BUFFER_TIME = 10000;
     let isManuallyPaused = false;
-    let hls;
 
     function updateMetadata() {
       if ('mediaSession' in navigator) {
@@ -133,21 +133,7 @@
     function playStation(url, name = "") {
       clearTimeout(reconnectTimeout);
       clearTimeout(bufferTimeout);
-
-      if (hls) {
-        hls.destroy();
-        hls = null;
-      }
-
-      // Se for m3u8 e navegador suportar Hls.js
-      if (url.endsWith(".m3u8") && Hls.isSupported()) {
-        hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(player);
-      } else {
-        player.src = url;
-      }
-
+      player.src = url;
       player.load();
 
       bufferTimeout = setTimeout(() => {
