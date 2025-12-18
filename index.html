@@ -20,7 +20,37 @@
       --status-color: #ccc;
       --buffering-color: yellow;
     }
-  
+
+    [data-theme="light"] {
+      --bg-color: #f5f6fa;
+      --text-color: #111;
+      --container-bg: #ffffff;
+      --button-bg: #0a58ca;
+      --button-hover: #084298;
+      --status-color: #555;
+      --buffering-color: #c59f00;
+    }
+
+      
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+
+    #themeToggle {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--text-color);
+    }
+
+
     body {
       background: var(--bg-color);
       color: var(--text-color);
@@ -86,7 +116,11 @@
 </head>
 <body>
   <div class="container">
+    <div class="header">
     <h1>🎧 Rádio M3U</h1>
+     <button id="themeToggle" aria-label="Alternar tema">🌙</button>
+  </div>
+
     <select id="stationSelect">
       <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
       <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP.aac">Alpha FM</option>
@@ -103,6 +137,9 @@
     <p id="status">🔊 Tocando: Metalcore</p>
     <p id="buffering"></p>
 
+    <div id="dataUsage">📶 Dados usados: 0.00 MB</div>
+
+
     <audio id="audioPlayer" preload="auto"></audio>
   </div>
 
@@ -114,8 +151,43 @@
     const buffering = document.getElementById('buffering');
     let reconnectTimeout;
     let bufferTimeout;
-    const BUFFER_TIME = 10000;
+    const BUFFER_TIME = 5000;
     let isManuallyPaused = false;
+
+    // Variaveis Uso de Dados
+    let playbackSeconds = 0;
+    let dataInterval;
+    let estimatedKbps = 128;
+
+    function detectEstimatedBitrate(url) {
+      if (!url) return 128;
+      if (url.includes(".aac") || url.includes(".aacp")) return 128;
+      if (url.includes("mp3")) return 128;
+      if (url.includes("ogg")) return 96;
+      return 128;
+    }
+
+    function startDataCounter() {
+      clearInterval(dataInterval);
+      estimatedKbps = detectEstimatedBitrate(select.value);
+
+      dataInterval = setInterval(() => {
+        if (!player.paused && !player.ended) {
+          playbackSeconds++;
+
+          const mbUsed = (estimatedKbps * playbackSeconds) / 8 / 1024;
+
+          document.getElementById("dataUsage").textContent =
+            `📶 Dados usados: ${mbUsed.toFixed(2)} MB`;
+        }
+      }, 1000);
+    }
+
+    function stopDataCounter() {
+      clearInterval(dataInterval);
+    }
+
+  //
 
     function updateMetadata() {
       if ('mediaSession' in navigator) {
@@ -134,7 +206,7 @@
       clearTimeout(reconnectTimeout);
       clearTimeout(bufferTimeout);
       player.src = url;
-      player.load();
+      
 
       bufferTimeout = setTimeout(() => {
         buffering.textContent = "⏳ Carregando buffer...";
@@ -157,7 +229,7 @@
       reconnectTimeout = setTimeout(() => {
         if (!isManuallyPaused) {
           status.textContent = "🔁 Reconectando...";
-          player.load();
+          
           player.play().catch(() => {
             scheduleReconnect();
           });
@@ -200,6 +272,7 @@
         player.play();
         playPauseBtn.textContent = "⏸️ Pausar";
         status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
+
       } else {
         isManuallyPaused = true;
         player.pause();
@@ -212,6 +285,8 @@
       status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
       clearTimeout(bufferTimeout);
       buffering.textContent = "";
+
+      startDataCounter(); //  Contador
     });
 
     player.addEventListener('waiting', () => {
@@ -224,6 +299,9 @@
 
     ['error', 'stalled', 'ended'].forEach(event => {
       player.addEventListener(event, () => {
+
+        stopDataCounter();
+        
         if (!isManuallyPaused) {
           status.textContent = "⚠️ Erro de reprodução. Tentando reconectar...";
           scheduleReconnect();
@@ -238,6 +316,24 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/services-worker.js');
     }
+
+    const themeToggle = document.getElementById("themeToggle");
+
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeToggle.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+      themeToggle.textContent = next === "dark" ? "☀️" : "🌙";
+    });
+
+
+
   </script>
 </body>
 </html>
