@@ -1,0 +1,245 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rádio M3U</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="image/icon.png" />
+  <link rel="icon" href="image/favicon.ico" type="image/x-icon">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --container-bg: #1e1e1e;
+      --button-bg: #1DB954;
+      --button-hover: #17a64a;
+      --status-color: #ccc;
+      --buffering-color: yellow;
+    }
+  
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  
+    .container {
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      padding: 2rem;
+      background: var(--container-bg);
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00000050;
+    }
+  
+    h1 {
+      color: var(--button-bg);
+      margin-bottom: 1rem;
+    }
+  
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+  
+    button {
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  
+    button:hover {
+      background-color: var(--button-hover);
+    }
+  
+    #status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--status-color);
+    }
+  
+    #buffering {
+      font-size: 1.2rem;
+      color: var(--buffering-color);
+    }
+  </style>  
+  
+  
+</head>
+<body>
+  <div class="container">
+    <h1>🎧 Rádio M3U</h1>
+    <select id="stationSelect">
+      <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
+      <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP.aac">Alpha FM</option>
+      <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac">Rádio 89 FM Rock</option>
+      <option value="https://player.ipstm.net/proxy/32224">Metal Zone Radio</option>
+      <option value="https://skywatcherawakenedradio.radiolebowski.com/play">Trap Radio</option>
+      <option value="https://streams.radiobob.de/metalcore/mp3-128">RADIO BOB - Metal</option>
+      <option value="https://rrdns-dumont.webnow.com.br/dumont.aac">Dumont FM - 104.3</option>
+      <option value="https://maximum-dark.hostingradio.ru/maxdark96.aacp">Radio Maximum Emo</option>
+      <option value="https://coreradio.ru/radio">Core Radio</option>
+      <option value="https://as-hls-ww.live.cf.md.bbci.co.uk/pool_87948813/live/ww/bbc_world_service/bbc_world_service.isml/bbc_world_service-audio=96000.norewind.m3u8" data-type="hls">  BBC World Service </option>
+
+    </select>
+
+    <button id="playPauseBtn">⏸️ Pausar</button>
+    <p id="status">🔊 Tocando: Metalcore</p>
+    <p id="buffering"></p>
+
+    <audio id="audioPlayer" preload="auto"></audio>
+  </div>
+
+  <script>
+    const select = document.getElementById('stationSelect');
+    const player = document.getElementById('audioPlayer');
+    const status = document.getElementById('status');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const buffering = document.getElementById('buffering');
+    let reconnectTimeout;
+    let bufferTimeout;
+    const BUFFER_TIME = 10000;
+    let isManuallyPaused = false;
+
+    function updateMetadata() {
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: select.options[select.selectedIndex].text,
+          artist: 'Rádio Web',
+          album: 'M3U Player',
+          artwork: [
+            { src: 'image/original.png', sizes: '348x348', type: 'image/png' }
+          ]
+        });
+      }
+    }
+
+    function playStation(url, name = "") {
+      clearTimeout(reconnectTimeout);
+      clearTimeout(bufferTimeout);
+      player.src = url;
+      player.load();
+
+      bufferTimeout = setTimeout(() => {
+        buffering.textContent = "⏳ Carregando buffer...";
+      }, BUFFER_TIME);
+
+      player.play().then(() => {
+        playPauseBtn.textContent = "⏸️ Pausar";
+        status.textContent = `🔊 Tocando: ${name}`;
+        isManuallyPaused = false;
+        updateMetadata();
+      }).catch(err => {
+        console.error("Erro ao tocar:", err);
+        status.textContent = "⚠️ Erro ao tocar. Tentando novamente...";
+        scheduleReconnect();
+      });
+    }
+
+    function scheduleReconnect() {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = setTimeout(() => {
+        if (!isManuallyPaused) {
+          status.textContent = "🔁 Reconectando...";
+          player.load();
+          player.play().catch(() => {
+            scheduleReconnect();
+          });
+        } else {
+          status.textContent = "⏸️ Pausado";
+        }
+      }, 5000);
+    }
+
+    function changeStation(direction) {
+      const total = select.options.length;
+      let currentIndex = select.selectedIndex;
+      let newIndex = currentIndex + direction;
+
+      if (newIndex < 0) newIndex = total - 1;
+      if (newIndex >= total) newIndex = 0;
+
+      select.selectedIndex = newIndex;
+      const name = select.options[newIndex].text;
+      playStation(select.value, name);
+    }
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        changeStation(-1);
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        changeStation(1);
+      });
+    }
+
+    select.addEventListener('change', () => {
+      const name = select.options[select.selectedIndex].text;
+      playStation(select.value, name);
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+      if (player.paused) {
+        isManuallyPaused = false;
+        player.play();
+        playPauseBtn.textContent = "⏸️ Pausar";
+        status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
+      } else {
+        isManuallyPaused = true;
+        player.pause();
+        playPauseBtn.textContent = "▶️ Tocar";
+        status.textContent = "⏸️ Pausado";
+      }
+    });
+
+    player.addEventListener('playing', () => {
+      status.textContent = `🔊 Tocando: ${select.options[select.selectedIndex].text}`;
+      clearTimeout(bufferTimeout);
+      buffering.textContent = "";
+    });
+
+    player.addEventListener('waiting', () => {
+      buffering.textContent = "⏳ Carregando buffer...";
+    });
+
+    player.addEventListener('canplay', () => {
+      buffering.textContent = "";
+    });
+
+    ['error', 'stalled', 'ended'].forEach(event => {
+      player.addEventListener(event, () => {
+        if (!isManuallyPaused) {
+          status.textContent = "⚠️ Erro de reprodução. Tentando reconectar...";
+          scheduleReconnect();
+        }
+      });
+    });
+
+    // Iniciar primeira estação
+    const firstName = select.options[select.selectedIndex].text;
+    playStation(select.value, firstName);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/services-worker.js');
+    }
+  </script>
+</body>
+</html>
