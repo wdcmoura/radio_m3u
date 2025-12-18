@@ -1,282 +1,162 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rádio M3U</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rádio M3U</title>
 
-<link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="image/icon.png" />
-<link rel="icon" href="image/favicon.ico" type="image/x-icon">
-<meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="image/icon.png" />
+  <link rel="icon" href="image/favicon.ico" type="image/x-icon">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
 
-<style>
-:root {
-  --bg:#121212;
-  --text:#ffffff;
-  --card:#1e1e1e;
-  --primary:#1DB954;
-  --primary-hover:#17a64a;
-  --muted:#ccc;
-  --grid:#2a2a2a;
-}
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #ffffff;
+      --container-bg: #1e1e1e;
+      --button-bg: #1DB954;
+      --button-hover: #17a64a;
+      --status-color: #ccc;
+      --buffering-color: yellow;
+    }
 
-[data-theme="light"] {
-  --bg:#f5f6fa;
-  --text:#111;
-  --card:#ffffff;
-  --primary:#0a58ca;
-  --primary-hover:#084298;
-  --muted:#555;
-  --grid:#ddd;
-}
+    [data-theme="light"] {
+      --bg-color: #f5f6fa;
+      --text-color: #111;
+      --container-bg: #ffffff;
+      --button-bg: #0a58ca;
+      --button-hover: #084298;
+      --status-color: #555;
+      --buffering-color: #c59f00;
+    }
 
-body {
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-.container {
-  max-width:420px;
-  width:90%;
-  padding:2rem;
-  background:var(--card);
-  border-radius:12px;
-  box-shadow:0 0 12px #00000040;
-  text-align:center;
-}
+    .container {
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      padding: 2rem;
+      background: var(--container-bg);
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00000050;
+    }
 
-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:1rem;
-}
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
 
-h1 {
-  color:var(--primary);
-  margin:0;
-}
+    h1 {
+      color: var(--button-bg);
+      margin: 0;
+    }
 
-.theme-btn {
-  background:none;
-  border:none;
-  font-size:1.4rem;
-  cursor:pointer;
-  color:var(--text);
-}
+    .theme-btn {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--text-color);
+    }
 
-select {
-  width:100%;
-  padding:.6rem;
-  margin-bottom:1rem;
-  border-radius:6px;
-  border:none;
-}
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
 
-button {
-  background:var(--primary);
-  color:#fff;
-  border:none;
-  padding:.6rem 1.2rem;
-  font-size:1.1rem;
-  border-radius:6px;
-  cursor:pointer;
-}
+    button {
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-size: 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
 
-button:hover { background:var(--primary-hover); }
+    button:hover {
+      background-color: var(--button-hover);
+    }
 
-#status, #buffering, #dataUsage {
-  font-size:.85rem;
-  margin-top:6px;
-  color:var(--muted);
-}
+    #status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--status-color);
+    }
 
-canvas {
-  margin-top:12px;
-  width:100%;
-  height:120px;
-  background:transparent;
-}
-</style>
+    #buffering {
+      font-size: 1.2rem;
+      color: var(--buffering-color);
+    }
+
+    #dataUsage {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: var(--status-color);
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
-  <header>
-    <h1>🎧 Rádio M3U</h1>
-    <button id="themeToggle" class="theme-btn">🌙</button>
-  </header>
+  <div class="container">
+    <div class="top">
+      <h1>🎧 Rádio M3U</h1>
+      <button id="themeToggle" class="theme-btn">🌙</button>
+    </div>
 
-  <select id="stationSelect">
-    <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
-    <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac">Rádio 89 FM Rock</option>
-    <option value="https://streams.radiobob.de/metalcore/mp3-128">RADIO BOB - Metal</option>
-    <option value="https://maximum-dark.hostingradio.ru/maxdark96.aacp">Radio Maximum Emo</option>
-  </select>
+    <select id="stationSelect">
+      <option value="https://stream.geracao.live/listen/rock/stream">Geração Rock</option>
+      <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP.aac">Alpha FM</option>
+      <option value="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP.aac">Rádio 89 FM Rock</option>
+      <option value="https://player.ipstm.net/proxy/32224">Metal Zone Radio</option>
+      <option value="https://skywatcherawakenedradio.radiolebowski.com/play">Trap Radio</option>
+      <option value="https://streams.radiobob.de/metalcore/mp3-128">RADIO BOB - Metal</option>
+      <option value="https://rrdns-dumont.webnow.com.br/dumont.aac">Dumont FM - 104.3</option>
+      <option value="https://maximum-dark.hostingradio.ru/maxdark96.aacp">Radio Maximum Emo</option>
+      <option value="https://coreradio.ru/radio">Core Radio</option>
+    </select>
 
-  <button id="playPauseBtn">⏸️ Pausar</button>
+    <button id="playPauseBtn">⏸️ Pausar</button>
 
-  <div id="status">🔊 Conectando...</div>
-  <div id="buffering"></div>
-  <div id="dataUsage">📶 Dados usados: 0.00 MB</div>
+    <p id="status">🔊 Conectando...</p>
+    <p id="buffering"></p>
+    <div id="dataUsage">📶 Dados usados: 0.00 MB</div>
 
-  <canvas id="usageChart" width="360" height="120"></canvas>
+    <audio id="audioPlayer" preload="auto"></audio>
+  </div>
 
-  <audio id="audioPlayer" preload="auto"></audio>
-</div>
+  <script>
+    /* ===== TEMA CLARO / ESCURO ===== */
+    const themeToggle = document.getElementById("themeToggle");
+    const savedTheme = localStorage.getItem("radio-theme") || "dark";
 
-<script>
-/* ===== ELEMENTOS ===== */
-const select = document.getElementById("stationSelect");
-const player = document.getElementById("audioPlayer");
-const status = document.getElementById("status");
-const buffering = document.getElementById("buffering");
-const dataUsage = document.getElementById("dataUsage");
-const playPauseBtn = document.getElementById("playPauseBtn");
-const themeToggle = document.getElementById("themeToggle");
-const canvas = document.getElementById("usageChart");
-const ctx = canvas.getContext("2d");
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    themeToggle.textContent = savedTheme === "dark" ? "☀️" : "🌙";
 
-/* ===== TEMA ===== */
-const savedTheme = localStorage.getItem("theme-radio") || "dark";
-document.documentElement.setAttribute("data-theme", savedTheme);
-themeToggle.textContent = savedTheme === "dark" ? "☀️" : "🌙";
-
-themeToggle.onclick = () => {
-  const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", next);
-  localStorage.setItem("theme-radio", next);
-  themeToggle.textContent = next === "dark" ? "☀️" : "🌙";
-};
-
-/* ===== CONSUMO DE DADOS ===== */
-let playbackSeconds = 0;
-let dataInterval;
-let estimatedKbps = 128;
-let usageHistory = [];
-
-function detectBitrate(url) {
-  if (url.includes(".aac")) return 128;
-  if (url.includes("mp3")) return 128;
-  if (url.includes("ogg")) return 96;
-  return 128;
-}
-
-function startDataCounter() {
-  clearInterval(dataInterval);
-  estimatedKbps = detectBitrate(select.value);
-
-  dataInterval = setInterval(() => {
-    if (!player.paused && !player.ended) {
-      playbackSeconds++;
-      const mb = (estimatedKbps * playbackSeconds) / 8 / 1024;
-      dataUsage.textContent = `📶 Dados usados: ${mb.toFixed(2)} MB`;
-      usageHistory.push(mb);
-      if (usageHistory.length > 60) usageHistory.shift();
-      drawChart();
-    }
-  }, 1000);
-}
-
-function stopDataCounter() {
-  clearInterval(dataInterval);
-}
-
-/* ===== GRÁFICO ===== */
-function drawChart() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const max = Math.max(...usageHistory, 1);
-  ctx.strokeStyle = getComputedStyle(document.documentElement)
-    .getPropertyValue("--primary");
-
-  ctx.beginPath();
-  usageHistory.forEach((v, i) => {
-    const x = (i / 59) * canvas.width;
-    const y = canvas.height - (v / max) * canvas.height;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-}
-
-/* ===== PLAYER ===== */
-let reconnectTimeout;
-const BUFFER_TIME = 4000;
-let isManuallyPaused = false;
-
-function updateStatus() {
-  const name = select.options[select.selectedIndex].text;
-  status.textContent = `🔊 Tocando: ${name}`;
-}
-
-function playStation() {
-  clearTimeout(reconnectTimeout);
-  player.src = select.value;
-
-  setTimeout(() => buffering.textContent = "⏳ Buffering...", BUFFER_TIME);
-
-  player.play().then(() => {
-    isManuallyPaused = false;
-    playPauseBtn.textContent = "⏸️ Pausar";
-    updateStatus();
-  }).catch(scheduleReconnect);
-}
-
-function scheduleReconnect() {
-  if (isManuallyPaused) return;
-  reconnectTimeout = setTimeout(() => {
-    status.textContent = "🔁 Reconectando...";
-    player.play().catch(scheduleReconnect);
-  }, 5000);
-}
-
-/* ===== EVENTOS ===== */
-select.onchange = () => {
-  playbackSeconds = 0;
-  usageHistory = [];
-  dataUsage.textContent = "📶 Dados usados: 0.00 MB";
-  playStation();
-};
-
-playPauseBtn.onclick = () => {
-  if (player.paused) {
-    isManuallyPaused = false;
-    player.play();
-    playPauseBtn.textContent = "⏸️ Pausar";
-    updateStatus();
-  } else {
-    isManuallyPaused = true;
-    player.pause();
-    playPauseBtn.textContent = "▶️ Tocar";
-    status.textContent = "⏸️ Pausado";
-  }
-};
-
-player.addEventListener("playing", () => {
-  buffering.textContent = "";
-  updateStatus();
-  startDataCounter();
-});
-
-player.addEventListener("pause", stopDataCounter);
-player.addEventListener("waiting", () => buffering.textContent = "⏳ Buffering...");
-["error","ended","stalled"].forEach(e =>
-  player.addEventListener(e, () => {
-    stopDataCounter();
-    if (!isManuallyPaused) scheduleReconnect();
-  })
-);
-
-/* ===== INIT ===== */
-playStation();
-</script>
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("radio-theme", next);
+      themeToggle.textContent = next === "dark" ? "☀️" : "🌙";
+    });
+  </script>
 </body>
 </html>
