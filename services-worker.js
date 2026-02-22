@@ -1,7 +1,6 @@
 const CACHE_NAME = 'radio-m3u-v2';
 
 const STATIC_ASSETS = [
-  '/',
   '/index.html',
   '/manifest.json',
   '/image/icon.png',
